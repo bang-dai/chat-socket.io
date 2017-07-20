@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Socket.IO</title>
+</head>
+<body>
+    <h1>Chat</h1>
+    <p class="visitor">
+        <input type="text" id="nickname" placeholder="Your nickname">
+        <input type="button" id="connect" value="Connect to chat"/>
+    </p>
+    <p class="logged" style="display: none">
+        <input type="text" id="message" placeholder="Your message">
+        <input type="button" id="send" value="Send"/>
+        <input type="button" id="disconnect" value="Leave the chat"/>
+    </p>
+
+    <section id="chatbox"></section>
+
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = null;
+        var nickname = null;
+
+        /**
+         * connect to the server
+         */
+        $('#connect').click(function(e){
+            nickname = $.trim($('#nickname').val());
+            if(!nickname)
+                return false;
+
+            $('.visitor').fadeToggle();
+            $('.logged').fadeToggle();
+
+            socket = io.connect('http://localhost:8080');
+            socket.on('message', function(message){
+                //console.log('message from server: ' + message.content)
+                writeMessage('<p>'+message.nickname+': '+message.content+'</p>');
+            });
+            socket.on('status', function(message){
+               writeMessage('<p>'+message.content+'</p>');
+            });
+            socket.emit('connexion', nickname);
+        });
+
+
+        /**
+         * Send message to server
+         */
+        $('#send').click(function(e){
+            sendMessage();
+        });
+
+        /**
+         * Send message to server
+         */
+        $('#message').keypress(function(e){
+            if(e.which == 13) {
+                sendMessage();
+            }
+        });
+
+
+        function sendMessage() {
+            var message = $('#message').val();
+            socket.emit('message', message);
+            $('#message').val('');
+            return false;
+        }
+
+        function writeMessage(message) {
+            $('#chatbox').append(message);
+        }
+
+        /**
+         * disconnect from the server
+         */
+        $('#disconnect').click(function(e){
+            socket.emit('leave');
+            $('.visitor').fadeToggle();
+            $('.logged').fadeToggle();
+            $('#chatbox').empty();
+        });
+
+    </script>
+</body>
+</html>
