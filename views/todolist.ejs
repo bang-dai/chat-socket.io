@@ -1,0 +1,13 @@
+<h1>My todolist</h1>
+<ul>
+    <% todolist.forEach(function(val, key) { %>
+        <li><a href="/delete/<%= key %>">X </a> <%= val %></li>
+    <% }) %>
+</ul>
+<div>
+    <form action="/addTask" method="post">
+        What to do now?
+        <input type="text" placeholder="task" id="newTask" name="newTask"/>
+        <input type="submit" value="add" id="addTask"/>
+    </form>
+</div>
